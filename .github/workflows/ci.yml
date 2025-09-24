@@ -22,9 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate YAML files
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: .
-          config_file: .yamllint
-          strict: false
-          extra_args: "--exclude-dir=config"
+        run: |
+          sudo apt-get update && sudo apt-get install -y yamllint
+          yamllint --config-file .yamllint .github/workflows/ docker-compose*.yml
