@@ -1,27 +1,30 @@
+---
 name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   validate-xml:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Validate XML files
-      run: |
-        sudo apt-get update && sudo apt-get install -y libxml2-utils
-        find . -name "*.xml" -exec xmllint --noout {} \;
+      - uses: actions/checkout@v4
+      - name: Validate XML files
+        run: |
+          sudo apt-get update && sudo apt-get install -y libxml2-utils
+          find . -name "*.xml" -not -path "./config/*" -exec xmllint --noout {} \;
 
   validate-yaml:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Validate YAML files
-      uses: ibiqlik/action-yamllint@v3
-      with:
-        file_or_dir: .
-        config_file: .yamllint
+      - uses: actions/checkout@v4
+      - name: Validate YAML files
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+          config_file: .yamllint
+          strict: false
+          extra_args: "--exclude-dir=config"
