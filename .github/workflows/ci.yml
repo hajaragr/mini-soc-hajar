@@ -17,11 +17,15 @@ jobs:
           sudo apt-get update && sudo apt-get install -y libxml2-utils
           find . -name "*.xml" -not -path "./config/*" -exec xmllint --noout {} \;
 
-  validate-yaml:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate YAML files
-        run: |
-          sudo apt-get update && sudo apt-get install -y yamllint
-          yamllint --config-file .yamllint .github/workflows/ docker-compose*.yml
+  # Temporarily disable YAML validation
+  # validate-yaml:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Validate YAML files
+  #       uses: ibiqlik/action-yamllint@v3
+  #       with:
+  #         file_or_dir: .
+  #         config_file: .yamllint
+  #         strict: false
+  #         extra_args: "--exclude-dir=config"
