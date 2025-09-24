@@ -1,0 +1,27 @@
+name: Deploy to Wazuh Manager
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'custom/**'
+      - 'docker-compose.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/wazuh-deploy-key
+        chmod 600 ~/.ssh/wazuh-deploy-key
+        echo "${{ secrets.WAZUH_MANAGER_HOST }} ecdsa-sha2-nistp256 ${{ secrets.WAZUH_MANAGER_HOST_KEY }}" >> ~/.ssh/known_hosts
+    
+    - name: Deploy custom rules
+      run: |
+        scp -i ~/.ssh/wazuh-deploy-key -r custom/* ${{ secrets.SSH_USER }}@${{ secrets.WAZUH_MANAGER_HOST }}:/var/ossec/etc/
+        ssh -i ~/.ssh/wazuh-deploy-key ${{ secrets.SSH_USER }}@${{ secrets.WAZUH_MANAGER_HOST }} "chown -R wazuh:wazuh /var/ossec/etc/custom && systemctl restart wazuh-manager"

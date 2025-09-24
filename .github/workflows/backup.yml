@@ -1,0 +1,34 @@
+name: Wazuh Configuration Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Daily at 3 AM
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/wazuh-backup-key
+        chmod 600 ~/.ssh/wazuh-backup-key
+        echo "${{ secrets.WAZUH_MANAGER_HOST }} ecdsa-sha2-nistp256 ${{ secrets.WAZUH_MANAGER_HOST_KEY }}" >> ~/.ssh/known_hosts
+    
+    - name: Create backup
+      run: |
+        ssh -i ~/.ssh/wazuh-backup-key ${{ secrets.SSH_USER }}@${{ secrets.WAZUH_MANAGER_HOST }} \
+          "tar -czf /tmp/wazuh-backup-$(date +%Y%m%d).tar.gz /var/ossec/etc/"
+    
+    - name: Download backup
+      run: |
+        scp -i ~/.ssh/wazuh-backup-key ${{ secrets.SSH_USER }}@${{ secrets.WAZUH_MANAGER_HOST }}:/tmp/wazuh-backup-*.tar.gz ./backups/
+    
+    - name: Upload to GitHub
+      uses: actions/upload-artifact@v3
+      with:
+        name: wazuh-backup-${{ github.run_number }}
+        path: backups/*.tar.gz
