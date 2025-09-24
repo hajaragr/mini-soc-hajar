@@ -1,0 +1,7 @@
+# Copy the entire content of your current docker-compose.yml but fix the volumes section
+# Look for the wazuh.manager service and ensure volumes look like this:
+volumes:
+  - wazuh-manager-data:/var/lib/wazuh
+  - ./config/wazuh_manager_ssl_certs:/var/ossec/etc/sslmanager:ro
+  - ./config/filebeat:/etc/filebeat:ro
+  - ./custom/rules:/var/ossec/etc/rules:ro
